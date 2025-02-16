@@ -5,7 +5,6 @@ from consts import Result
 import logging
 import argparse
 from tqdm import tqdm
-from typing import Dict
 from pprint import pprint
 
 
@@ -17,35 +16,6 @@ player_fns: List[Player] = [
     HyperAggressive,
 ]
 
-
-def build_dict(d: Dict[str, int]) -> str:
-    return ", ".join((f"{k+':':<4} {v:<5}" for k, v in d.items()))
-
-
-def build_table(res: Dict[str, Dict[str, int]]) -> List[List[Any]]:
-    all_names = tuple(res.keys())
-    mapping = {}
-    for idx, n in enumerate(all_names):
-        mapping[n] = idx
-
-    rows = [[""] + list(all_names)]
-
-    for banker_name in all_names:
-        row = [banker_name]
-        for player_name in all_names:
-            row.append(build_dict(res[banker_name][player_name]))
-        rows.append(row)
-
-    return rows
-
-
-def print_table(table: List[List[Any]]) -> None:
-    for r in table:
-        for v in r:
-            print(f"{str(v):<30}", end="\t")
-        print()
-
-
 if __name__ == '__main__':
     logging.basicConfig(
         filename="messages.log",
@@ -54,16 +24,30 @@ if __name__ == '__main__':
     )
 
     parser = argparse.ArgumentParser(
-        description="Simulate Chinese New Year Blackjack")
+        description="Simulate Chinese New Year Blackjack",
+    )
 
-    parser.add_argument("-i", "--iterations", type=int,
-                        help="number of iterations to run")
+    parser.add_argument(
+        "-i", "--iterations",
+        type=int,
+        help="number of iterations to run",
+    )
+    parser.add_argument(
+        '-c', "--count",
+        type=int,
+        default=len(player_fns),
+        help="the number of players",
+    )
 
     args = parser.parse_args()
     f = {}
     iterations = args.iterations
     progress = tqdm(total=len(player_fns) * iterations)
-    players: List[Player] = [player_fn(False) for player_fn in player_fns]
+    player_count = args.count
+
+    players: List[Player] = [
+        player_fns[i % len(player_fns)](False) for i in range(player_count)
+    ]
 
     for banker_fn in player_fns:
         banker: Player = banker_fn(True)

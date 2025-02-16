@@ -34,7 +34,9 @@ class DefaultPlayer(Player):
     def __init__(self, is_banker: bool):
         return super().__init__("Stand", is_banker)
 
-    def make_move(self, _: Hand) -> Move:
+    def make_move(self, hand: Hand) -> Move:
+        if hand.get_value() == 15:
+            return Move.Run
         return Move.Stand
 
 
@@ -122,7 +124,7 @@ class HyperAggressive(Player):
         if value == 15:
             return Move.Run
 
-        if value <= 18:
+        if value <= 19:
             return Move.Open3
 
         return Move.Stand
