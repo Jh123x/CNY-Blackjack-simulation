@@ -6,6 +6,7 @@ import logging
 import argparse
 from tqdm import tqdm
 from typing import Dict
+from pprint import pprint
 
 
 player_fns: List[Player] = [
@@ -61,42 +62,31 @@ if __name__ == '__main__':
     args = parser.parse_args()
     f = {}
     iterations = args.iterations
-    progress = tqdm(total=len(player_fns) * len(player_fns) *iterations)
+    progress = tqdm(total=len(player_fns) * iterations)
+    players: List[Player] = [player_fn(False) for player_fn in player_fns]
 
     for banker_fn in player_fns:
         banker: Player = banker_fn(True)
+        game = Game(banker, players)
 
-        for player_fn in player_fns:
-            players: List[Player] = [player_fn(False) for _ in range(5)]
-            game = Game(banker, players)
+        for _ in range(iterations):
+            progress.update()
+            stats = game.run()
+            win, tie, loss = stats
+            logging.info(f"{banker.get_name()}: {stats}")
 
-            for _ in range(iterations):
-                progress.update()
-                stats = game.run()
-                win, tie, loss = stats
-                logging.info(f"{banker.get_name()}: {stats}")
+            banker_name = banker.get_name()
+            curr_val = f.get(banker_name, {
+                Result.Win.value: 0,
+                Result.Tie.value: 0,
+                Result.Lose.value: 0,
+            })
 
-                banker_name = banker.get_name()
-                player_name = players[0].get_name()
+            curr_val[Result.Win.value] += win
+            curr_val[Result.Tie.value] += tie
+            curr_val[Result.Lose.value] += loss
 
-                if banker_name not in f:
-                    f[banker_name] = {}
+            f[banker_name] = curr_val
+            game.reset()
 
-                if player_name not in f[banker_name]:
-                    f[banker_name][player_name] = {
-                        Result.Win.value: 0,
-                        Result.Tie.value: 0,
-                        Result.Lose.value: 0,
-                    }
-
-                curr_val = f[banker_name][player_name]
-
-                curr_val[Result.Win.value] += win
-                curr_val[Result.Tie.value] += tie
-                curr_val[Result.Lose.value] += loss
-
-                f[banker_name][player_name] = curr_val
-            
-                game.reset()
-
-    print_table(build_table(f))
+    pprint(f)

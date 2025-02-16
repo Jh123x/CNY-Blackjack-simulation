@@ -93,11 +93,11 @@ class Hand:
         if player_sum > 21:
             return Result.Win
 
-        if len(banker) >= 5:
-            return Result.Win
-
         if len(player) >= 5:
             return Result.Lose
+        
+        if len(banker) >= 5:
+            return Result.Win
 
         if banker_sum > player_sum:
             return Result.Win
