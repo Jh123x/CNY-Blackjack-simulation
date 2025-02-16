@@ -1,6 +1,6 @@
 from player import *
 from game import Game
-from typing import List, Any
+from typing import List
 from consts import Result
 import logging
 import argparse
